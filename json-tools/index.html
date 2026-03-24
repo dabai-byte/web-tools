@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON工具增强版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tab-active {
+            border-bottom: 2px solid #3b82f6;
+            color: #3b82f6;
+        }
+        .tab-inactive {
+            border-bottom: 2px solid transparent;
+            color: #6b7280;
+        }
+        .result-code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+        }
+        .error-box {
+            background-color: #fef2f2;
+            border: 1px solid #ef4444;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+        .error-message {
+            color: #dc2626;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <h1 class="text-2xl font-bold text-gray-900">JSON工具增强版</h1>
+            <p class="text-sm text-gray-500 mt-1">JSON格式化、压缩、校验、转换与查询一体化工具</p>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Tabs -->
+        <div class="border-b border-gray-200 mb-6">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button onclick="switchTab('format')" id="tab-format" class="tab-active whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                    JSON格式化
+                </button>
+                <button onclick="switchTab('minify')" id="tab-minify" class="tab-inactive whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                    JSON压缩
+                </button>
+                <button onclick="switchTab('validate')" id="tab-validate" class="tab-inactive whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                    JSON校验
+                </button>
+                <button onclick="switchTab('to-csv')" id="tab-to-csv" class="tab-inactive whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                    JSON转CSV
+                </button>
+                <button onclick="switchTab('to-xml')" id="tab-to-xml" class="tab-inactive whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                    JSON转XML
+                </button>
+                <button onclick="switchTab('jsonpath')" id="tab-jsonpath" class="tab-inactive whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+                    JSON Path查询
+                </button>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Input Section -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <span id="input-label">输入 JSON</span>
+                </label>
+                <textarea 
+                    id="json-input" 
+                    class="w-full h-96 p-4 border border-gray-300 rounded-md font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical" 
+                    placeholder='{"key": "value", "nested": {"key": "value"}}'
+                >{
+  "users": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com",
+      "active": true,
+      "roles": ["admin", "user"],
+      "profile": {
+        "age": 30,
+        "city": "New York"
+      }
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "active": false,
+      "roles": ["user"],
+      "profile": {
+        "age": 25,
+        "city": "Los Angeles"
+      }
+    }
+  ],
+  "meta": {
+    "version": "1.0",
+    "count": 2
+  }
+}</textarea>
+                <div class="mt-3 flex space-x-3">
+                    <button onclick="loadExample()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        加载示例
+                    </button>
+                    <button onclick="clearInput()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        清空
+                    </button>
+                </div>
+            </div>
+
+            <!-- Output Section -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                        <span id="output-label">输出结果</span>
+                    </label>
+                    <button onclick="copyOutput()" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                        复制结果
+                    </button>
+                </div>
+                <div class="relative">
+                    <textarea 
+                        id="json-output" 
+                        class="w-full h-96 p-4 border border-gray-300 rounded-md font-mono text-sm result-code focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical bg-gray-50" 
+                        readonly
+                    ></textarea>
+                    <div id="error-message" class="error-box hidden">
+                        <span class="error-message">❌ </span><span id="error-text"></span>
+                    </div>
+                </div>
+                <div class="mt-3 flex space-x-3">
+                    <button onclick="downloadResult()" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        下载结果
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons (Visible based on tab) -->
+        <div class="mt-6 flex justify-center space-x-4" id="action-buttons">
+            <!-- Format Tab -->
+            <button onclick="formatJSON()" id="btn-format" class="hidden px-8 py-3 text-base font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-md">
+                格式化 JSON
+            </button>
+            
+            <!-- Minify Tab -->
+            <button onclick="minifyJSON()" id="btn-minify" class="hidden px-8 py-3 text-base font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-md">
+                压缩 JSON
+            </button>
+            
+            <!-- Validate Tab -->
+            <button onclick="validateJSON()" id="btn-validate" class="hidden px-8 py-3 text-base font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-md">
+                校验 JSON
+            </button>
+            
+            <!-- To CSV Tab -->
+            <button onclick="convertToCSV()" id="btn-to-csv" class="hidden px-8 py-3 text-base font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 shadow-md">
+                转换为 CSV
+            </button>
+            
+            <!-- To XML Tab -->
+            <button onclick="convertToXML()" id="btn-to-xml" class="hidden px-8 py-3 text-base font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 shadow-md">
+                转换为 XML
+            </button>
+            
+            <!-- JSON Path Tab -->
+            <div class="flex items-center space-x-2" id="btn-jsonpath">
+                <input type="text" id="jsonpath-input" placeholder="输入 JSON Path (例如: $.users[*].name)" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <button onclick="queryJSONPath()" class="px-6 py-3 text-base font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-md">
+                    查询
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            // 格式化初始输入
+            formatJSON();
+            switchTab('format');
+        });
+
+        // 切换标签页
+        function switchTab(tabName) {
+            // 更新标签样式
+            document.querySelectorAll('.tab-inactive').forEach(btn => {
+                btn.classList.remove('tab-inactive');
+                btn.classList.add('tab-active');
+            });
+            document.querySelectorAll('.tab-active').forEach(btn => {
+                if (btn.id !== `tab-${tabName}`) {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('tab-inactive');
+                }
+            });
+
+            // 显示对应的操作按钮
+            const buttons = document.getElementById('action-buttons');
+            buttons.querySelectorAll('button').forEach(btn => btn.classList.add('hidden'));
+            buttons.querySelectorAll('.flex').forEach(el => el.classList.add('hidden'));
+
+            let inputPlaceholder, outputLabel;
+
+            switch (tabName) {
+                case 'format':
+                    document.getElementById('btn-format').classList.remove('hidden');
+                    inputPlaceholder = '输入 JSON 进行格式化';
+                    outputLabel = '格式化后的 JSON';
+                    break;
+                case 'minify':
+                    document.getElementById('btn-minify').classList.remove('hidden');
+                    inputPlaceholder = '输入 JSON 进行压缩';
+                    outputLabel = '压缩后的 JSON';
+                    break;
+                case 'validate':
+                    document.getElementById('btn-validate').classList.remove('hidden');
+                    inputPlaceholder = '输入 JSON 进行校验';
+                    outputLabel = '校验结果';
+                    break;
+                case 'to-csv':
+                    document.getElementById('btn-to-csv').classList.remove('hidden');
+                    inputPlaceholder = '输入 JSON 数组进行转换';
+                    outputLabel = 'CSV 内容';
+                    break;
+                case 'to-xml':
+                    document.getElementById('btn-to-xml').classList.remove('hidden');
+                    inputPlaceholder = '输入 JSON 进行转换';
+                    outputLabel = 'XML 内容';
+                    break;
+                case 'jsonpath':
+                    document.getElementById('btn-jsonpath').classList.remove('hidden');
+                    inputPlaceholder = '输入 JSON Path 查询表达式';
+                    outputLabel = '查询结果';
+                    break;
+            }
+
+            // 更新标签文本
+            document.getElementById('input-label').textContent = `输入 ${outputLabel.includes('JSON') ? 'JSON' : ''}`;
+            document.getElementById('output-label').textContent = outputLabel;
+
+            // 清空错误消息
+            document.getElementById('error-message').classList.add('hidden');
+            document.getElementById('json-output').value = '';
+
+            // 设置输入框占位符
+            document.getElementById('json-input').placeholder = inputPlaceholder;
+        }
+
+        // JSON 解析辅助函数
+        function parseJSON() {
+            const input = document.getElementById('json-input').value.trim();
+            if (!input) {
+                showError('请输入 JSON 数据');
+                return null;
+            }
+            try {
+                return JSON.parse(input);
+            } catch (e) {
+                showError(`JSON 格式错误: ${e.message}`);
+                return null;
+            }
+        }
+
+        // 显示错误消息
+        function showError(message) {
+            const errorBox = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            errorText.textContent = message;
+            errorBox.classList.remove('hidden');
+        }
+
+        // 隐藏错误消息
+        function hideError() {
+            document.getElementById('error-message').classList.add('hidden');
+        }
+
+        // JSON 格式化
+        function formatJSON() {
+            hideError();
+            const data = parseJSON();
+            if (data === null) return;
+            document.getElementById('json-output').value = JSON.stringify(data, null, 2);
+        }
+
+        // JSON 压缩
+        function minifyJSON() {
+            hideError();
+            const data = parseJSON();
+            if (data === null) return;
+            document.getElementById('json-output').value = JSON.stringify(data);
+        }
+
+        // JSON 校验
+        function validateJSON() {
+            const input = document.getElementById('json-input').value.trim();
+            if (!input) {
+                showError('请输入 JSON 数据');
+                document.getElementById('json-output').value = '未输入';
+                return;
+            }
+            try {
+                JSON.parse(input);
+                document.getElementById('json-output').value = '✓ JSON 格式有效';
+                document.getElementById('json-output').style.backgroundColor = '#d1fae5';
+            } catch (e) {
+                showError(`JSON 格式错误: ${e.message}`);
+                document.getElementById('json-output').value = '✗ JSON 格式无效';
+                document.getElementById('json-output').style.backgroundColor = '#fee2e2';
+            }
+        }
+
+        // JSON 转 CSV
+        function convertToCSV() {
+            hideError();
+            const data = parseJSON();
+            if (data === null) return;
+
+            // 处理数组
+            if (Array.isArray(data)) {
+                if (data.length === 0) {
+                    showError('数组不能为空');
+                    return;
+                }
+                const headers = Object.keys(data[0]);
+                const csvRows = [headers.join(','), ...data.map(row => headers.map(key => {
+                    const val = row[key];
+                    return typeof val === 'object' ? JSON.stringify(val) : val;
+                }).join(','))];
+                document.getElementById('json-output').value = csvRows.join('\n');
+            } 
+            // 处理对象
+            else if (typeof data === 'object') {
+                // 尝试提取数组
+                let arrayData = null;
+                for (const key in data) {
+                    if (Array.isArray(data[key])) {
+                        arrayData = data[key];
+                        break;
+                    }
+                }
+                
+                if (arrayData && arrayData.length > 0) {
+                    const headers = Object.keys(arrayData[0]);
+                    const csvRows = [headers.join(','), ...arrayData.map(row => headers.map(key => {
+                        const val = row[key];
+                        return typeof val === 'object' ? JSON.stringify(val) : val;
+                    }).join(','))];
+                    document.getElementById('json-output').value = csvRows.join('\n');
+                } else {
+                    showError('对象中未找到数组数据');
+                }
+            } else {
+                showError('需要数组或包含数组的对象');
+            }
+        }
+
+        // JSON 转 XML
+        function convertToXML() {
+            hideError();
+            const data = parseJSON();
+            if (data === null) return;
+            
+            const xml = convertObjectToXML(data, 'root');
+            document.getElementById('json-output').value = xml;
+        }
+
+        function convertObjectToXML(obj, rootName) {
+            let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+            xml += toXML(rootName, obj);
+            return xml;
+        }
+
+        function toXML(name, obj) {
+            let result = `<${name}>`;
+            
+            if (obj === null || obj === undefined) {
+                result += `</${name}>`;
+            } else if (typeof obj === 'object') {
+                if (Array.isArray(obj)) {
+                    obj.forEach(item => {
+                        result += toXML('item', item);
+                    });
+                } else {
+                    for (const key in obj) {
+                        result += toXML(key, obj[key]);
+                    }
+                }
+            } else {
+                result += escapeXml(String(obj));
+            }
+            
+            result += `</${name}>`;
+            return result;
+        }
+
+        function escapeXml(str) {
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&apos;');
+        }
+
+        // JSON Path 查询
+        function queryJSONPath() {
+            hideError();
+            const input = document.getElementById('json-input').value.trim();
+            if (!input) {
+                showError('请输入 JSON 数据');
+                return;
+            }
+            
+            const jsonPath = document.getElementById('jsonpath-input').value.trim();
+            if (!jsonPath) {
+                showError('请输入 JSON Path 表达式');
+                return;
+            }
+            
+            try {
+                const data = JSON.parse(input);
+                const result = executeJSONPath(data, jsonPath);
+                document.getElementById('json-output').value = JSON.stringify(result, null, 2);
+            } catch (e) {
+                showError(`查询错误: ${e.message}`);
+            }
+        }
+
+        function executeJSONPath(obj, path) {
+            if (path === '$') return obj;
+            
+            // 简单的 JSON Path 实现
+            let result = [obj];
+            const tokens = path.replace(/^\$/, '').split('.').filter(t => t);
+            
+            for (const token of tokens) {
+                const newResult = [];
+                
+                for (const item of result) {
+                    if (Array.isArray(item)) {
+                        if (token === '*') {
+                            item.forEach(subItem => newResult.push(subItem));
+                        } else if (token.match(/^\d+$/)) {
+                            const index = parseInt(token);
+                            if (index < item.length) {
+                                newResult.push(item[index]);
+                            }
+                        }
+                    } else if (typeof item === 'object' && item !== null) {
+                        if (token in item) {
+                            newResult.push(item[token]);
+                        }
+                    }
+                }
+                
+                result = newResult;
+            }
+            
+            return result;
+        }
+
+        // 加载示例
+        function loadExample() {
+            document.getElementById('json-input').value = `{
+  "users": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com",
+      "active": true,
+      "roles": ["admin", "user"],
+      "profile": {
+        "age": 30,
+        "city": "New York"
+      }
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "active": false,
+      "roles": ["user"],
+      "profile": {
+        "age": 25,
+        "city": "Los Angeles"
+      }
+    }
+  ],
+  "meta": {
+    "version": "1.0",
+    "count": 2
+  }
+}`;
+        }
+
+        // 清空输入
+        function clearInput() {
+            document.getElementById('json-input').value = '';
+            document.getElementById('json-output').value = '';
+            hideError();
+        }
+
+        // 复制结果
+        function copyOutput() {
+            const output = document.getElementById('json-output');
+            if (output.value) {
+                output.select();
+                document.execCommand('copy');
+                alert('结果已复制到剪贴板');
+            } else {
+                alert('没有可复制的内容');
+            }
+        }
+
+        // 下载结果
+        function downloadResult() {
+            const output = document.getElementById('json-output');
+            if (!output.value) {
+                alert('没有可下载的内容');
+                return;
+            }
+            
+            const blob = new Blob([output.value], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            
+            // 根据内容类型设置文件名
+            const content = output.value;
+            let filename = 'result';
+            if (content.startsWith('<?xml') || content.includes('<')) {
+                filename = 'output.xml';
+            } else if (content.includes(',')) {
+                filename = 'output.csv';
+            } else {
+                filename = 'output.json';
+            }
+            
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

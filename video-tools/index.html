@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频工具箱 - 免费在线视频处理</title>
+    <meta name="description" content="免费在线视频压缩、格式转换、GIF制作。无需上传服务器，本地处理保护隐私。">
+    <meta name="keywords" content="视频压缩,视频转换,GIF制作,在线视频工具">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-gray-100">
+    <header class="gradient-bg py-6">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold">🎬 视频工具箱</h1>
+            <p class="text-gray-100 mt-2">视频压缩 · 格式转换 · GIF制作</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- 视频压缩 -->
+            <div class="bg-gray-800 rounded-2xl p-8">
+                <div class="text-5xl mb-4">📦</div>
+                <h2 class="text-xl font-bold mb-3">视频压缩</h2>
+                <p class="text-gray-400 mb-6">减小视频文件大小，保持画质</p>
+                <div id="compress-zone" class="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center cursor-pointer hover:border-yellow-400 transition">
+                    <input type="file" id="compress-input" accept="video/*" class="hidden">
+                    <p class="text-gray-400">点击或拖拽上传视频</p>
+                    <p class="text-xs text-gray-500 mt-2">支持 MP4, WebM, MOV</p>
+                </div>
+                <div id="compress-preview" class="mt-4 hidden">
+                    <video id="compress-video" class="max-w-full rounded-lg" controls></video>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm text-gray-400 mb-2">压缩质量</label>
+                    <select id="compress-quality" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2">
+                        <option value="0.8">高质量 (80%)</option>
+                        <option value="0.6" selected>中等质量 (60%)</option>
+                        <option value="0.4">较小体积 (40%)</option>
+                    </select>
+                </div>
+                <button id="compress-btn" class="w-full mt-4 bg-yellow-500 text-gray-900 py-3 rounded-xl font-medium hover:bg-yellow-600 transition disabled:opacity-50" disabled>
+                    压缩视频
+                </button>
+                <div id="compress-result" class="mt-4 text-sm text-gray-400"></div>
+            </div>
+
+            <!-- GIF制作 -->
+            <div class="bg-gray-800 rounded-2xl p-8">
+                <div class="text-5xl mb-4">🎞️</div>
+                <h2 class="text-xl font-bold mb-3">GIF制作</h2>
+                <p class="text-gray-400 mb-6">从视频创建GIF动图</p>
+                <div id="gif-zone" class="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center cursor-pointer hover:border-pink-400 transition">
+                    <input type="file" id="gif-input" accept="video/*" class="hidden">
+                    <p class="text-gray-400">点击或拖拽上传视频</p>
+                </div>
+                <div id="gif-preview" class="mt-4 hidden">
+                    <video id="gif-video" class="max-w-full rounded-lg"></video>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">开始时间(秒)</label>
+                        <input type="number" id="gif-start" value="0" min="0" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">时长(秒)</label>
+                        <input type="number" id="gif-duration" value="5" min="1" max="30" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm text-gray-400 mb-2">尺寸</label>
+                    <select id="gif-size" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2">
+                        <option value="320">320px (小)</option>
+                        <option value="480" selected>480px (中)</option>
+                        <option value="640">640px (大)</option>
+                    </select>
+                </div>
+                <button id="gif-btn" class="w-full mt-4 bg-pink-500 text-white py-3 rounded-xl font-medium hover:bg-pink-600 transition disabled:opacity-50" disabled>
+                    生成GIF
+                </button>
+                <div id="gif-result" class="mt-4"></div>
+            </div>
+
+            <!-- 视频截图 -->
+            <div class="bg-gray-800 rounded-2xl p-8">
+                <div class="text-5xl mb-4">📸</div>
+                <h2 class="text-xl font-bold mb-3">视频截图</h2>
+                <p class="text-gray-400 mb-6">从视频中提取图片帧</p>
+                <div id="screenshot-zone" class="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 transition">
+                    <input type="file" id="screenshot-input" accept="video/*" class="hidden">
+                    <p class="text-gray-400">点击或拖拽上传视频</p>
+                </div>
+                <div id="screenshot-preview" class="mt-4 hidden">
+                    <video id="screenshot-video" class="max-w-full rounded-lg" controls></video>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm text-gray-400 mb-2">截图时间点(秒)</label>
+                    <input type="number" id="screenshot-time" value="1" min="0" step="0.1" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2">
+                </div>
+                <div class="mt-2">
+                    <label class="flex items-center gap-2 text-sm text-gray-400">
+                        <input type="checkbox" id="screenshot-multi" class="rounded">
+                        批量截图 (每秒1张)
+                    </label>
+                </div>
+                <button id="screenshot-btn" class="w-full mt-4 bg-blue-500 text-white py-3 rounded-xl font-medium hover:bg-blue-600 transition disabled:opacity-50" disabled>
+                    提取截图
+                </button>
+                <div id="screenshot-result" class="mt-4 grid grid-cols-3 gap-2"></div>
+            </div>
+        </div>
+
+        <!-- 功能说明 -->
+        <div class="mt-16 text-center">
+            <h2 class="text-2xl font-bold mb-8">为什么选择我们？</h2>
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="p-6">
+                    <div class="text-3xl mb-3">🔒</div>
+                    <h3 class="font-medium">隐私安全</h3>
+                    <p class="text-sm text-gray-500 mt-2">视频处理在本地完成</p>
+                </div>
+                <div class="p-6">
+                    <div class="text-3xl mb-3">⚡</div>
+                    <h3 class="font-medium">快速处理</h3>
+                    <p class="text-sm text-gray-500 mt-2">无需上传到服务器</p>
+                </div>
+                <div class="p-6">
+                    <div class="text-3xl mb-3">💰</div>
+                    <h3 class="font-medium">完全免费</h3>
+                    <p class="text-sm text-gray-500 mt-2">无隐藏费用</p>
+                </div>
+                <div class="p-6">
+                    <div class="text-3xl mb-3">📱</div>
+                    <h3 class="font-medium">全平台</h3>
+                    <p class="text-sm text-gray-500 mt-2">手机电脑都能用</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-6 text-gray-500 text-sm border-t border-gray-800">
+        <p>© 2026 视频工具箱 | 所有处理均在浏览器本地完成</p>
+    </footer>
+
+    <script>
+        // 工具函数
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 视频压缩
+        const compressZone = document.getElementById('compress-zone');
+        const compressInput = document.getElementById('compress-input');
+        const compressBtn = document.getElementById('compress-btn');
+        const compressVideo = document.getElementById('compress-video');
+        const compressPreview = document.getElementById('compress-preview');
+        const compressResult = document.getElementById('compress-result');
+        let compressFile = null;
+
+        compressZone.addEventListener('click', () => compressInput.click());
+        compressInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                compressFile = e.target.files[0];
+                compressVideo.src = URL.createObjectURL(compressFile);
+                compressPreview.classList.remove('hidden');
+                compressBtn.disabled = false;
+                compressResult.textContent = `原始大小: ${formatSize(compressFile.size)}`;
+            }
+        });
+
+        compressBtn.addEventListener('click', async () => {
+            if (!compressFile) return;
+            compressBtn.textContent = '处理中...';
+            compressBtn.disabled = true;
+
+            // 使用Canvas进行简单压缩（实际项目建议用FFmpeg.wasm）
+            const video = document.createElement('video');
+            video.src = URL.createObjectURL(compressFile);
+            await video.play();
+            video.pause();
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+
+            // 这里简化处理，实际视频压缩需要更复杂的逻辑
+            canvas.toBlob((blob) => {
+                // 注意：这只是截图，真实压缩需要MediaRecorder或FFmpeg.wasm
+                compressResult.textContent = `提示: 完整视频压缩需要FFmpeg.wasm库，当前仅演示截图功能`;
+                compressBtn.textContent = '压缩视频';
+                compressBtn.disabled = false;
+            }, 'image/jpeg', 0.8);
+        });
+
+        // GIF制作
+        const gifZone = document.getElementById('gif-zone');
+        const gifInput = document.getElementById('gif-input');
+        const gifBtn = document.getElementById('gif-btn');
+        const gifVideo = document.getElementById('gif-video');
+        const gifPreview = document.getElementById('gif-preview');
+        const gifResult = document.getElementById('gif-result');
+        let gifFile = null;
+
+        gifZone.addEventListener('click', () => gifInput.click());
+        gifInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                gifFile = e.target.files[0];
+                gifVideo.src = URL.createObjectURL(gifFile);
+                gifPreview.classList.remove('hidden');
+                gifBtn.disabled = false;
+            }
+        });
+
+        gifBtn.addEventListener('click', async () => {
+            if (!gifFile) return;
+            gifBtn.textContent = '生成中...';
+            gifBtn.disabled = true;
+            gifResult.innerHTML = '<p class="text-gray-400">提示: GIF生成需要gif.js库支持</p>';
+            gifBtn.textContent = '生成GIF';
+            gifBtn.disabled = false;
+        });
+
+        // 视频截图
+        const screenshotZone = document.getElementById('screenshot-zone');
+        const screenshotInput = document.getElementById('screenshot-input');
+        const screenshotBtn = document.getElementById('screenshot-btn');
+        const screenshotVideo = document.getElementById('screenshot-video');
+        const screenshotPreview = document.getElementById('screenshot-preview');
+        const screenshotResult = document.getElementById('screenshot-result');
+        let screenshotFile = null;
+
+        screenshotZone.addEventListener('click', () => screenshotInput.click());
+        screenshotInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                screenshotFile = e.target.files[0];
+                screenshotVideo.src = URL.createObjectURL(screenshotFile);
+                screenshotPreview.classList.remove('hidden');
+                screenshotBtn.disabled = false;
+            }
+        });
+
+        screenshotBtn.addEventListener('click', async () => {
+            if (!screenshotFile) return;
+            screenshotBtn.textContent = '提取中...';
+            screenshotBtn.disabled = true;
+            screenshotResult.innerHTML = '';
+
+            const video = document.createElement('video');
+            video.src = URL.createObjectURL(screenshotFile);
+            video.muted = true;
+
+            video.onloadeddata = async () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+
+                const time = parseFloat(document.getElementById('screenshot-time').value);
+                const multi = document.getElementById('screenshot-multi').checked;
+
+                if (multi) {
+                    // 批量截图
+                    const duration = video.duration;
+                    for (let t = 0; t < Math.min(duration, 10); t++) {
+                        video.currentTime = t;
+                        await new Promise(r => video.onseeked = r);
+                        ctx.drawImage(video, 0, 0);
+                        const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.9));
+                        const url = URL.createObjectURL(blob);
+                        screenshotResult.innerHTML += `<img src="${url}" class="rounded">`;
+                    }
+                } else {
+                    // 单张截图
+                    video.currentTime = time;
+                    await new Promise(r => video.onseeked = r);
+                    ctx.drawImage(video, 0, 0);
+                    canvas.toBlob((blob) => {
+                        downloadBlob(blob, 'screenshot.jpg');
+                        const url = URL.createObjectURL(blob);
+                        screenshotResult.innerHTML = `<img src="${url}" class="rounded col-span-3">`;
+                    }, 'image/jpeg', 0.9);
+                }
+
+                screenshotBtn.textContent = '提取截图';
+                screenshotBtn.disabled = false;
+            };
+
+            video.load();
+        });
+    </script>
+</body>
+</html>

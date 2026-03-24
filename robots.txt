@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dabai-byte.github.io/web-tools/sitemap.xml

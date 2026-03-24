@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文本对比工具 - 在线Diff对比工具</title>
+    <meta name="description" content="免费在线文本对比工具，支持并排对比、差异高亮显示。">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .diff-added { background: #2d4a2d; }
+        .diff-removed { background: #4a2d2d; }
+        .diff-line { font-family: monospace; white-space: pre; }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-gray-100">
+    <header class="bg-gradient-to-r from-blue-600 to-indigo-600 py-6">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold">📝 文本对比工具</h1>
+            <p class="text-gray-200 mt-2">并排对比 · 差异高亮</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="grid md:grid-cols-2 gap-4 mb-6">
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">原始文本</label>
+                <textarea id="text1" rows="12" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 font-mono text-sm" placeholder="粘贴原始文本..."></textarea>
+            </div>
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">修改后文本</label>
+                <textarea id="text2" rows="12" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 font-mono text-sm" placeholder="粘贴修改后文本..."></textarea>
+            </div>
+        </div>
+        
+        <div class="flex gap-4 mb-6">
+            <button onclick="compareTexts()" class="flex-1 bg-blue-600 py-3 rounded-lg hover:bg-blue-700 font-medium">
+                🔍 对比文本
+            </button>
+            <button onclick="loadSample()" class="bg-gray-700 px-6 py-3 rounded-lg hover:bg-gray-600">
+                📋 加载示例
+            </button>
+            <button onclick="clearAll()" class="bg-gray-700 px-6 py-3 rounded-lg hover:bg-gray-600">
+                🗑️ 清空
+            </button>
+        </div>
+
+        <!-- 统计 -->
+        <div id="stats" class="hidden grid grid-cols-4 gap-4 mb-6">
+            <div class="bg-gray-800 p-4 rounded-lg text-center">
+                <div class="text-2xl font-bold text-green-400" id="added-count">0</div>
+                <div class="text-sm text-gray-400">新增行</div>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg text-center">
+                <div class="text-2xl font-bold text-red-400" id="removed-count">0</div>
+                <div class="text-sm text-gray-400">删除行</div>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg text-center">
+                <div class="text-2xl font-bold text-gray-300" id="unchanged-count">0</div>
+                <div class="text-sm text-gray-400">未变行</div>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg text-center">
+                <div class="text-2xl font-bold text-yellow-400" id="change-percent">0%</div>
+                <div class="text-sm text-gray-400">变化率</div>
+            </div>
+        </div>
+
+        <!-- 结果 -->
+        <div id="result" class="hidden">
+            <h2 class="text-xl font-bold mb-4">对比结果</h2>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-gray-800 rounded-lg overflow-hidden">
+                    <div class="bg-gray-700 px-4 py-2 text-sm text-gray-400">原始文本</div>
+                    <div id="diff1" class="p-4 overflow-x-auto"></div>
+                </div>
+                <div class="bg-gray-800 rounded-lg overflow-hidden">
+                    <div class="bg-gray-700 px-4 py-2 text-sm text-gray-400">修改后文本</div>
+                    <div id="diff2" class="p-4 overflow-x-auto"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 统一视图 -->
+        <div id="unified-result" class="hidden mt-6">
+            <h2 class="text-xl font-bold mb-4">统一对比视图</h2>
+            <div class="bg-gray-800 rounded-lg overflow-x-auto">
+                <div id="unified-diff" class="p-4"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function compareTexts() {
+            const text1 = document.getElementById('text1').value;
+            const text2 = document.getElementById('text2').value;
+            
+            if (!text1 && !text2) {
+                alert('请输入文本');
+                return;
+            }
+            
+            const lines1 = text1.split('\n');
+            const lines2 = text2.split('\n');
+            
+            // 简单的行级diff
+            const diff1 = [];
+            const diff2 = [];
+            const unified = [];
+            
+            const maxLen = Math.max(lines1.length, lines2.length);
+            let added = 0, removed = 0, unchanged = 0;
+            
+            for (let i = 0; i < maxLen; i++) {
+                const line1 = lines1[i] || '';
+                const line2 = lines2[i] || '';
+                
+                if (line1 === line2) {
+                    diff1.push({ text: line1, type: 'unchanged' });
+                    diff2.push({ text: line2, type: 'unchanged' });
+                    unified.push({ text: line1, type: 'unchanged', num: i + 1 });
+                    unchanged++;
+                } else {
+                    if (line1) {
+                        diff1.push({ text: line1, type: 'removed' });
+                        unified.push({ text: line1, type: 'removed', num: i + 1 });
+                        removed++;
+                    }
+                    if (line2) {
+                        diff2.push({ text: line2, type: 'added' });
+                        unified.push({ text: line2, type: 'added', num: i + 1 });
+                        added++;
+                    }
+                }
+            }
+            
+            // 渲染结果
+            renderDiff('diff1', diff1);
+            renderDiff('diff2', diff2);
+            renderUnified(unified);
+            
+            // 更新统计
+            document.getElementById('added-count').textContent = added;
+            document.getElementById('removed-count').textContent = removed;
+            document.getElementById('unchanged-count').textContent = unchanged;
+            const total = added + removed + unchanged;
+            document.getElementById('change-percent').textContent = 
+                total > 0 ? Math.round((added + removed) / total * 100) + '%' : '0%';
+            
+            // 显示结果
+            document.getElementById('stats').classList.remove('hidden');
+            document.getElementById('result').classList.remove('hidden');
+            document.getElementById('unified-result').classList.remove('hidden');
+        }
+        
+        function renderDiff(id, diff) {
+            const container = document.getElementById(id);
+            container.innerHTML = diff.map(line => {
+                const cls = line.type === 'added' ? 'diff-added' : 
+                           line.type === 'removed' ? 'diff-removed' : '';
+                const prefix = line.type === 'added' ? '+ ' : 
+                               line.type === 'removed' ? '- ' : '  ';
+                return `<div class="diff-line ${cls} px-2 py-0.5">${escapeHtml(prefix + line.text)}</div>`;
+            }).join('');
+        }
+        
+        function renderUnified(unified) {
+            const container = document.getElementById('unified-diff');
+            container.innerHTML = unified.map(line => {
+                const cls = line.type === 'added' ? 'diff-added text-green-300' : 
+                           line.type === 'removed' ? 'diff-removed text-red-300' : 'text-gray-400';
+                const prefix = line.type === 'added' ? '+' : 
+                               line.type === 'removed' ? '-' : ' ';
+                return `<div class="diff-line ${cls} px-2 py-0.5">${escapeHtml(prefix + ' ' + line.text)}</div>`;
+            }).join('');
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function loadSample() {
+            document.getElementById('text1').value = `function hello() {
+    console.log("Hello");
+    return true;
+}
+
+const x = 1;
+const y = 2;`;
+            
+            document.getElementById('text2').value = `function hello(name) {
+    console.log("Hello, " + name);
+    return true;
+}
+
+const x = 1;
+const z = 3;`;
+        }
+        
+        function clearAll() {
+            document.getElementById('text1').value = '';
+            document.getElementById('text2').value = '';
+            document.getElementById('stats').classList.add('hidden');
+            document.getElementById('result').classList.add('hidden');
+            document.getElementById('unified-result').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

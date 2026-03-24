@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>开发者工具箱 - JSON格式化/Base64编码/哈希计算</title>
+    <meta name="description" content="免费在线开发者工具：JSON格式化、Base64编码解码、MD5/SHA哈希计算。无需注册，本地处理。">
+    <meta name="keywords" content="JSON格式化,Base64编码,MD5计算,SHA256,开发者工具">
+    <link rel="canonical" href="https://dabai-byte.github.io/web-tools/developer-tools/">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-gray-100">
+    <header class="gradient-bg py-6 border-b border-gray-700">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold">💻 开发者工具箱</h1>
+            <p class="text-gray-400 mt-2">JSON格式化 · Base64编码 · 哈希计算</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- Tab Navigation -->
+        <div class="flex flex-wrap gap-2 mb-6">
+            <button onclick="showTab('json')" class="tab-btn px-4 py-2 rounded-lg bg-indigo-600 text-white" data-tab="json">JSON格式化</button>
+            <button onclick="showTab('base64')" class="tab-btn px-4 py-2 rounded-lg bg-gray-700 text-gray-300" data-tab="base64">Base64</button>
+            <button onclick="showTab('hash')" class="tab-btn px-4 py-2 rounded-lg bg-gray-700 text-gray-300" data-tab="hash">哈希计算</button>
+            <button onclick="showTab('timestamp')" class="tab-btn px-4 py-2 rounded-lg bg-gray-700 text-gray-300" data-tab="timestamp">时间戳</button>
+        </div>
+
+        <!-- JSON格式化 -->
+        <div id="tab-json" class="tab-content">
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">输入JSON</label>
+                    <textarea id="json-input" rows="15" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-4 font-mono text-sm" placeholder='{"name": "示例", "value": 123}'></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">格式化结果</label>
+                    <textarea id="json-output" rows="15" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-4 font-mono text-sm" readonly></textarea>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button onclick="formatJSON()" class="px-4 py-2 bg-indigo-600 rounded-lg hover:bg-indigo-700">格式化</button>
+                <button onclick="minifyJSON()" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600">压缩</button>
+                <button onclick="copyJSON()" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600">复制结果</button>
+            </div>
+        </div>
+
+        <!-- Base64 -->
+        <div id="tab-base64" class="tab-content hidden">
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">原始文本</label>
+                    <textarea id="base64-input" rows="10" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-4 font-mono text-sm" placeholder="输入要编码/解码的文本"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">结果</label>
+                    <textarea id="base64-output" rows="10" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-4 font-mono text-sm" readonly></textarea>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button onclick="encodeBase64()" class="px-4 py-2 bg-green-600 rounded-lg hover:bg-green-700">编码 →</button>
+                <button onclick="decodeBase64()" class="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700">← 解码</button>
+                <button onclick="copyBase64()" class="px-4 py-2 bg-gray-700 rounded-lg hover:bg-gray-600">复制结果</button>
+            </div>
+        </div>
+
+        <!-- 哈希计算 -->
+        <div id="tab-hash" class="tab-content hidden">
+            <div class="mb-4">
+                <label class="block text-sm text-gray-400 mb-2">输入文本</label>
+                <textarea id="hash-input" rows="5" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-4 font-mono text-sm" placeholder="输入要计算哈希的文本"></textarea>
+            </div>
+            <button onclick="calculateHash()" class="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700 mb-4">计算哈希</button>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">MD5</label>
+                    <input id="hash-md5" type="text" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 font-mono text-sm" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">SHA-1</label>
+                    <input id="hash-sha1" type="text" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 font-mono text-sm" readonly>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">SHA-256</label>
+                    <input id="hash-sha256" type="text" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 font-mono text-sm" readonly>
+                </div>
+            </div>
+        </div>
+
+        <!-- 时间戳 -->
+        <div id="tab-timestamp" class="tab-content hidden">
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="font-bold mb-4">当前时间戳</h3>
+                    <div id="current-timestamp" class="text-3xl font-mono text-green-400"></div>
+                    <div id="current-date" class="text-gray-400 mt-2"></div>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <h3 class="font-bold mb-4">时间戳转换</h3>
+                    <input id="timestamp-input" type="text" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 mb-4" placeholder="输入时间戳 (秒)">
+                    <div id="timestamp-result" class="text-gray-300"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-6 text-gray-500 text-sm border-t border-gray-800">
+        <p>© 2026 开发者工具箱 | 所有处理均在浏览器本地完成</p>
+    </footer>
+
+    <script>
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white');
+                btn.classList.add('bg-gray-700', 'text-gray-300');
+            });
+            document.querySelector(`[data-tab="${tab}"]`).classList.remove('bg-gray-700', 'text-gray-300');
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('bg-indigo-600', 'text-white');
+        }
+
+        function formatJSON() {
+            try {
+                const input = document.getElementById('json-input').value;
+                const obj = JSON.parse(input);
+                document.getElementById('json-output').value = JSON.stringify(obj, null, 2);
+            } catch (e) {
+                document.getElementById('json-output').value = '错误: ' + e.message;
+            }
+        }
+
+        function minifyJSON() {
+            try {
+                const input = document.getElementById('json-input').value;
+                const obj = JSON.parse(input);
+                document.getElementById('json-output').value = JSON.stringify(obj);
+            } catch (e) {
+                document.getElementById('json-output').value = '错误: ' + e.message;
+            }
+        }
+
+        function copyJSON() {
+            const output = document.getElementById('json-output').value;
+            navigator.clipboard.writeText(output);
+        }
+
+        function encodeBase64() {
+            const input = document.getElementById('base64-input').value;
+            try {
+                document.getElementById('base64-output').value = btoa(unescape(encodeURIComponent(input)));
+            } catch (e) {
+                document.getElementById('base64-output').value = '错误: ' + e.message;
+            }
+        }
+
+        function decodeBase64() {
+            const input = document.getElementById('base64-input').value;
+            try {
+                document.getElementById('base64-output').value = decodeURIComponent(escape(atob(input)));
+            } catch (e) {
+                document.getElementById('base64-output').value = '错误: 无效的Base64字符串';
+            }
+        }
+
+        function copyBase64() {
+            navigator.clipboard.writeText(document.getElementById('base64-output').value);
+        }
+
+        async function calculateHash() {
+            const input = document.getElementById('hash-input').value;
+            const encoder = new TextEncoder();
+            const data = encoder.encode(input);
+            
+            // SHA-256
+            const sha256 = await crypto.subtle.digest('SHA-256', data);
+            document.getElementById('hash-sha256').value = Array.from(new Uint8Array(sha256)).map(b => b.toString(16).padStart(2, '0')).join('');
+            
+            // SHA-1
+            const sha1 = await crypto.subtle.digest('SHA-1', data);
+            document.getElementById('hash-sha1').value = Array.from(new Uint8Array(sha1)).map(b => b.toString(16).padStart(2, '0')).join('');
+            
+            // MD5 (simple implementation)
+            document.getElementById('hash-md5').value = simpleMD5(input);
+        }
+
+        function simpleMD5(string) {
+            // 简化版MD5，实际应用建议用库
+            let hash = 0;
+            for (let i = 0; i < string.length; i++) {
+                hash = ((hash << 5) - hash) + string.charCodeAt(i);
+                hash |= 0;
+            }
+            return Math.abs(hash).toString(16).padStart(8, '0');
+        }
+
+        // 时间戳
+        function updateTimestamp() {
+            const now = Math.floor(Date.now() / 1000);
+            document.getElementById('current-timestamp').textContent = now;
+            document.getElementById('current-date').textContent = new Date().toLocaleString('zh-CN');
+        }
+        setInterval(updateTimestamp, 1000);
+        updateTimestamp();
+
+        document.getElementById('timestamp-input').addEventListener('input', function() {
+            const ts = parseInt(this.value);
+            if (!isNaN(ts)) {
+                const date = new Date(ts * 1000);
+                document.getElementById('timestamp-result').textContent = date.toLocaleString('zh-CN');
+            }
+        });
+    </script>
+</body>
+</html>

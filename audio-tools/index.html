@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音频工具箱 - 免费在线音频处理</title>
+    <meta name="description" content="免费在线音频剪辑、格式转换、音量调整。无需上传服务器，本地处理保护隐私。">
+    <meta name="keywords" content="音频剪辑,音频转换,音量调整,在线音频工具">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-gray-100">
+    <header class="gradient-bg py-6">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold">🎵 音频工具箱</h1>
+            <p class="text-gray-100 mt-2">音频剪辑 · 格式转换 · 音量调整</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- 音频剪辑 -->
+            <div class="bg-gray-800 rounded-2xl p-8">
+                <div class="text-5xl mb-4">✂️</div>
+                <h2 class="text-xl font-bold mb-3">音频剪辑</h2>
+                <p class="text-gray-400 mb-6">截取音频片段，支持精确到秒</p>
+                <div id="trim-zone" class="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center cursor-pointer hover:border-green-400 transition">
+                    <input type="file" id="trim-input" accept="audio/*" class="hidden">
+                    <p class="text-gray-400">点击或拖拽上传音频</p>
+                    <p class="text-xs text-gray-500 mt-2">支持 MP3, WAV, OGG, M4A</p>
+                </div>
+                <div id="trim-preview" class="mt-4 hidden">
+                    <audio id="trim-audio" controls class="w-full"></audio>
+                    <div class="text-sm text-gray-400 mt-2" id="trim-info"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">开始时间(秒)</label>
+                        <input type="number" id="trim-start" value="0" min="0" step="0.1" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-2">结束时间(秒)</label>
+                        <input type="number" id="trim-end" value="10" min="0" step="0.1" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2">
+                    </div>
+                </div>
+                <button id="trim-btn" class="w-full mt-4 bg-green-500 text-white py-3 rounded-xl font-medium hover:bg-green-600 transition disabled:opacity-50" disabled>
+                    剪辑音频
+                </button>
+            </div>
+
+            <!-- 音量调整 -->
+            <div class="bg-gray-800 rounded-2xl p-8">
+                <div class="text-5xl mb-4">🔊</div>
+                <h2 class="text-xl font-bold mb-3">音量调整</h2>
+                <p class="text-gray-400 mb-6">增大或减小音频音量</p>
+                <div id="volume-zone" class="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 transition">
+                    <input type="file" id="volume-input" accept="audio/*" class="hidden">
+                    <p class="text-gray-400">点击或拖拽上传音频</p>
+                </div>
+                <div id="volume-preview" class="mt-4 hidden">
+                    <audio id="volume-audio" controls class="w-full"></audio>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm text-gray-400 mb-2">音量倍数: <span id="volume-val">1.5</span>x</label>
+                    <input type="range" id="volume-range" min="0.1" max="3" step="0.1" value="1.5" class="w-full" oninput="document.getElementById('volume-val').textContent=this.value">
+                </div>
+                <button id="volume-btn" class="w-full mt-4 bg-blue-500 text-white py-3 rounded-xl font-medium hover:bg-blue-600 transition disabled:opacity-50" disabled>
+                    调整音量
+                </button>
+                <div id="volume-result" class="mt-4 text-sm text-gray-400"></div>
+            </div>
+
+            <!-- 格式转换 -->
+            <div class="bg-gray-800 rounded-2xl p-8">
+                <div class="text-5xl mb-4">🔄</div>
+                <h2 class="text-xl font-bold mb-3">格式转换</h2>
+                <p class="text-gray-400 mb-6">转换音频格式</p>
+                <div id="convert-zone" class="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center cursor-pointer hover:border-purple-400 transition">
+                    <input type="file" id="convert-input" accept="audio/*" class="hidden">
+                    <p class="text-gray-400">点击或拖拽上传音频</p>
+                </div>
+                <div id="convert-preview" class="mt-4 hidden">
+                    <audio id="convert-audio" controls class="w-full"></audio>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-sm text-gray-400 mb-2">目标格式</label>
+                    <select id="format-select" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2">
+                        <option value="mp3">MP3</option>
+                        <option value="wav">WAV</option>
+                        <option value="ogg">OGG</option>
+                    </select>
+                </div>
+                <button id="convert-btn" class="w-full mt-4 bg-purple-500 text-white py-3 rounded-xl font-medium hover:bg-purple-600 transition disabled:opacity-50" disabled>
+                    转换格式
+                </button>
+            </div>
+        </div>
+
+        <!-- 音频合并 -->
+        <div class="mt-8 bg-gray-800 rounded-2xl p-8 max-w-4xl mx-auto">
+            <h2 class="text-xl font-bold mb-4">🔗 音频合并</h2>
+            <p class="text-gray-400 mb-4">将多个音频文件合并为一个</p>
+            
+            <div id="merge-zone" class="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center cursor-pointer hover:border-yellow-400 transition mb-4">
+                <input type="file" id="merge-input" accept="audio/*" multiple class="hidden">
+                <p class="text-gray-400">点击或拖拽上传多个音频文件</p>
+            </div>
+            
+            <div id="merge-list" class="space-y-2 mb-4"></div>
+            
+            <button id="merge-btn" class="w-full bg-yellow-500 text-gray-900 py-3 rounded-xl font-medium hover:bg-yellow-600 transition disabled:opacity-50" disabled>
+                合并音频
+            </button>
+        </div>
+
+        <!-- Features -->
+        <div class="mt-16 text-center">
+            <h2 class="text-2xl font-bold mb-8">为什么选择我们？</h2>
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="p-6">
+                    <div class="text-3xl mb-3">🔒</div>
+                    <h3 class="font-medium">隐私安全</h3>
+                    <p class="text-sm text-gray-500 mt-2">音频处理在本地完成</p>
+                </div>
+                <div class="p-6">
+                    <div class="text-3xl mb-3">⚡</div>
+                    <h3 class="font-medium">快速处理</h3>
+                    <p class="text-sm text-gray-500 mt-2">无需上传到服务器</p>
+                </div>
+                <div class="p-6">
+                    <div class="text-3xl mb-3">💰</div>
+                    <h3 class="font-medium">完全免费</h3>
+                    <p class="text-sm text-gray-500 mt-2">无隐藏费用</p>
+                </div>
+                <div class="p-6">
+                    <div class="text-3xl mb-3">📱</div>
+                    <h3 class="font-medium">全平台</h3>
+                    <p class="text-sm text-gray-500 mt-2">手机电脑都能用</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-6 text-gray-500 text-sm border-t border-gray-800">
+        <p>© 2026 音频工具箱 | 所有处理均在浏览器本地完成</p>
+    </footer>
+
+    <script>
+        // Web Audio API 处理音频
+        let audioContext;
+        
+        function getAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioContext;
+        }
+        
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+        
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+        
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 音频剪辑
+        const trimZone = document.getElementById('trim-zone');
+        const trimInput = document.getElementById('trim-input');
+        const trimBtn = document.getElementById('trim-btn');
+        const trimAudio = document.getElementById('trim-audio');
+        const trimPreview = document.getElementById('trim-preview');
+        const trimInfo = document.getElementById('trim-info');
+        let trimFile = null;
+        let trimDuration = 0;
+
+        trimZone.addEventListener('click', () => trimInput.click());
+        trimInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                trimFile = e.target.files[0];
+                trimAudio.src = URL.createObjectURL(trimFile);
+                trimPreview.classList.remove('hidden');
+                trimBtn.disabled = false;
+                
+                trimAudio.onloadedmetadata = () => {
+                    trimDuration = trimAudio.duration;
+                    trimInfo.textContent = `时长: ${formatTime(trimDuration)}`;
+                    document.getElementById('trim-end').value = Math.min(10, trimDuration).toFixed(1);
+                    document.getElementById('trim-end').max = trimDuration;
+                };
+            }
+        });
+
+        trimBtn.addEventListener('click', async () => {
+            if (!trimFile) return;
+            trimBtn.textContent = '处理中...';
+            trimBtn.disabled = true;
+            
+            try {
+                const ctx = getAudioContext();
+                const arrayBuffer = await trimFile.arrayBuffer();
+                const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+                
+                const start = parseFloat(document.getElementById('trim-start').value);
+                const end = parseFloat(document.getElementById('trim-end').value);
+                
+                const sampleRate = audioBuffer.sampleRate;
+                const channels = audioBuffer.numberOfChannels;
+                const startSample = Math.floor(start * sampleRate);
+                const endSample = Math.floor(end * sampleRate);
+                const length = endSample - startSample;
+                
+                const newBuffer = ctx.createBuffer(channels, length, sampleRate);
+                
+                for (let i = 0; i < channels; i++) {
+                    const oldData = audioBuffer.getChannelData(i);
+                    const newData = newBuffer.getChannelData(i);
+                    for (let j = 0; j < length; j++) {
+                        newData[j] = oldData[startSample + j];
+                    }
+                }
+                
+                // 导出为WAV
+                const wav = audioBufferToWav(newBuffer);
+                const blob = new Blob([wav], { type: 'audio/wav' });
+                downloadBlob(blob, 'trimmed.wav');
+                
+                trimBtn.textContent = '✓ 剪辑完成！';
+                setTimeout(() => {
+                    trimBtn.textContent = '剪辑音频';
+                    trimBtn.disabled = false;
+                }, 2000);
+            } catch (error) {
+                alert('处理失败: ' + error.message);
+                trimBtn.textContent = '剪辑音频';
+                trimBtn.disabled = false;
+            }
+        });
+
+        // 音量调整
+        const volumeZone = document.getElementById('volume-zone');
+        const volumeInput = document.getElementById('volume-input');
+        const volumeBtn = document.getElementById('volume-btn');
+        let volumeFile = null;
+
+        volumeZone.addEventListener('click', () => volumeInput.click());
+        volumeInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                volumeFile = e.target.files[0];
+                document.getElementById('volume-audio').src = URL.createObjectURL(volumeFile);
+                document.getElementById('volume-preview').classList.remove('hidden');
+                volumeBtn.disabled = false;
+            }
+        });
+
+        volumeBtn.addEventListener('click', async () => {
+            if (!volumeFile) return;
+            volumeBtn.textContent = '处理中...';
+            volumeBtn.disabled = true;
+            
+            try {
+                const ctx = getAudioContext();
+                const arrayBuffer = await volumeFile.arrayBuffer();
+                const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+                
+                const volume = parseFloat(document.getElementById('volume-range').value);
+                const channels = audioBuffer.numberOfChannels;
+                const length = audioBuffer.length;
+                
+                const newBuffer = ctx.createBuffer(channels, length, audioBuffer.sampleRate);
+                
+                for (let i = 0; i < channels; i++) {
+                    const oldData = audioBuffer.getChannelData(i);
+                    const newData = newBuffer.getChannelData(i);
+                    for (let j = 0; j < length; j++) {
+                        newData[j] = Math.max(-1, Math.min(1, oldData[j] * volume));
+                    }
+                }
+                
+                const wav = audioBufferToWav(newBuffer);
+                const blob = new Blob([wav], { type: 'audio/wav' });
+                downloadBlob(blob, 'volume_adjusted.wav');
+                
+                volumeBtn.textContent = '✓ 完成！';
+                setTimeout(() => {
+                    volumeBtn.textContent = '调整音量';
+                    volumeBtn.disabled = false;
+                }, 2000);
+            } catch (error) {
+                alert('处理失败: ' + error.message);
+                volumeBtn.textContent = '调整音量';
+                volumeBtn.disabled = false;
+            }
+        });
+
+        // 音频合并
+        const mergeZone = document.getElementById('merge-zone');
+        const mergeInput = document.getElementById('merge-input');
+        const mergeBtn = document.getElementById('merge-btn');
+        const mergeList = document.getElementById('merge-list');
+        let mergeFiles = [];
+
+        mergeZone.addEventListener('click', () => mergeInput.click());
+        mergeInput.addEventListener('change', (e) => {
+            for (const file of e.target.files) {
+                if (file.type.startsWith('audio/')) {
+                    mergeFiles.push(file);
+                }
+            }
+            updateMergeList();
+        });
+
+        function updateMergeList() {
+            mergeList.innerHTML = mergeFiles.map((file, i) => `
+                <div class="flex items-center justify-between bg-gray-700 p-3 rounded-lg">
+                    <span class="text-sm truncate">${file.name}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-400">${formatSize(file.size)}</span>
+                        <button onclick="removeMergeFile(${i})" class="text-red-400 hover:text-red-300">×</button>
+                    </div>
+                </div>
+            `).join('');
+            mergeBtn.disabled = mergeFiles.length < 2;
+        }
+
+        window.removeMergeFile = (i) => {
+            mergeFiles.splice(i, 1);
+            updateMergeList();
+        };
+
+        mergeBtn.addEventListener('click', async () => {
+            if (mergeFiles.length < 2) return;
+            mergeBtn.textContent = '处理中...';
+            mergeBtn.disabled = true;
+            
+            try {
+                const ctx = getAudioContext();
+                const buffers = [];
+                
+                for (const file of mergeFiles) {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+                    buffers.push(audioBuffer);
+                }
+                
+                // 计算总长度
+                const totalLength = buffers.reduce((sum, buf) => sum + buf.length, 0);
+                const sampleRate = buffers[0].sampleRate;
+                const channels = Math.max(...buffers.map(b => b.numberOfChannels));
+                
+                const newBuffer = ctx.createBuffer(channels, totalLength, sampleRate);
+                
+                let offset = 0;
+                for (const buf of buffers) {
+                    for (let i = 0; i < channels; i++) {
+                        const sourceChannel = i < buf.numberOfChannels ? i : 0;
+                        const sourceData = buf.getChannelData(sourceChannel);
+                        const destData = newBuffer.getChannelData(i);
+                        destData.set(sourceData, offset);
+                    }
+                    offset += buf.length;
+                }
+                
+                const wav = audioBufferToWav(newBuffer);
+                const blob = new Blob([wav], { type: 'audio/wav' });
+                downloadBlob(blob, 'merged.wav');
+                
+                mergeBtn.textContent = '✓ 合并完成！';
+                setTimeout(() => {
+                    mergeBtn.textContent = '合并音频';
+                    mergeBtn.disabled = mergeFiles.length < 2;
+                }, 2000);
+            } catch (error) {
+                alert('处理失败: ' + error.message);
+                mergeBtn.textContent = '合并音频';
+                mergeBtn.disabled = mergeFiles.length < 2;
+            }
+        });
+
+        // AudioBuffer 转 WAV
+        function audioBufferToWav(buffer) {
+            const numChannels = buffer.numberOfChannels;
+            const sampleRate = buffer.sampleRate;
+            const format = 1; // PCM
+            const bitDepth = 16;
+            
+            const bytesPerSample = bitDepth / 8;
+            const blockAlign = numChannels * bytesPerSample;
+            
+            const dataLength = buffer.length * blockAlign;
+            const bufferLength = 44 + dataLength;
+            
+            const arrayBuffer = new ArrayBuffer(bufferLength);
+            const view = new DataView(arrayBuffer);
+            
+            // WAV header
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + dataLength, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, format, true);
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * blockAlign, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitDepth, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, dataLength, true);
+            
+            // 写入音频数据
+            const offset = 44;
+            const channelData = [];
+            for (let i = 0; i < numChannels; i++) {
+                channelData.push(buffer.getChannelData(i));
+            }
+            
+            let index = offset;
+            for (let i = 0; i < buffer.length; i++) {
+                for (let channel = 0; channel < numChannels; channel++) {
+                    const sample = Math.max(-1, Math.min(1, channelData[channel][i]));
+                    view.setInt16(index, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+                    index += 2;
+                }
+            }
+            
+            return arrayBuffer;
+        }
+        
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+    </script>
+</body>
+</html>

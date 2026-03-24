@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线计算器 - 科学计算器免费使用</title>
+    <meta name="description" content="免费在线科学计算器，支持基础运算、科学计算、单位换算。无需下载，即开即用。">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .calc-btn {
+            transition: all 0.1s;
+        }
+        .calc-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-gray-100 flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <h1 class="text-2xl font-bold mb-4 text-center">🧮 在线计算器</h1>
+        
+        <!-- 显示屏 -->
+        <div class="bg-gray-800 rounded-t-2xl p-4">
+            <div class="text-right text-gray-400 text-sm h-6 overflow-hidden" id="history"></div>
+            <div class="text-right text-4xl font-mono overflow-x-auto" id="display">0</div>
+        </div>
+        
+        <!-- 按钮区 -->
+        <div class="bg-gray-800 rounded-b-2xl p-4 grid grid-cols-4 gap-2">
+            <!-- 第一行 -->
+            <button class="calc-btn bg-gray-700 p-4 rounded-xl text-lg font-medium" onclick="clearAll()">AC</button>
+            <button class="calc-btn bg-gray-700 p-4 rounded-xl text-lg font-medium" onclick="toggleSign()">±</button>
+            <button class="calc-btn bg-gray-700 p-4 rounded-xl text-lg font-medium" onclick="percent()">%</button>
+            <button class="calc-btn bg-orange-500 p-4 rounded-xl text-lg font-medium" onclick="setOperator('/')">÷</button>
+            
+            <!-- 第二行 -->
+            <button class="calc-btn bg-gray-600 p-4 rounded-xl text-lg font-medium" onclick="appendNumber('7')">7</button>
+            <button class="calc-btn bg-gray-600 p-4 rounded-xl text-lg font-medium" onclick="appendNumber('8')">8</button>
+            <button class="calc-btn bg-gray-600 p-4 rounded-xl text-lg font-medium" onclick="appendNumber('9')">9</button>
+            <button class="calc-btn bg-orange-500 p-4 rounded-xl text-lg font-medium" onclick="setOperator('*')">×</button>
+            
+            <!-- 第三行 -->
+            <button class="calc-btn bg-gray-600 p-4 rounded-xl text-lg font-medium" onclick="appendNumber('4')">4</button>
+            <button class="calc-btn bg-gray-600 p-4 rounded-xl text-lg font-medium" onclick="appendNumber('5')">5</button>
+            <button class="calc-btn bg-gray-600 p-4 rounded-xl text-lg font-medium" onclick="appendNumber('6')">6</button>
+            <button class="calc-btn bg-orange-500 p-4 rounded-xl text-lg font-medium" onclick="setOperator('-')">−</button>
+            
+            <!-- 第四行 -->
+            <button class="calc-btn bg-gray-600 p-4 rounded-xl text-lg font-medium" onclick="appendNumber('1')">1</button>
+            <button class="calc-btn bg-gray-600 p-4 rounded-xl text-lg font-medium" onclick="appendNumber('2')">2</button>
+            <button class="calc-btn bg-gray-600 p-4 rounded-xl text-lg font-medium" onclick="appendNumber('3')">3</button>
+            <button class="calc-btn bg-orange-500 p-4 rounded-xl text-lg font-medium" onclick="setOperator('+')">+</button>
+            
+            <!-- 第五行 -->
+            <button class="calc-btn bg-gray-600 p-4 rounded-xl text-lg font-medium col-span-2" onclick="appendNumber('0')">0</button>
+            <button class="calc-btn bg-gray-600 p-4 rounded-xl text-lg font-medium" onclick="appendNumber('.')">.</button>
+            <button class="calc-btn bg-orange-500 p-4 rounded-xl text-lg font-medium" onclick="calculate()">=</button>
+        </div>
+        
+        <!-- 科学计算 -->
+        <div class="mt-4 bg-gray-800 rounded-2xl p-4 grid grid-cols-4 gap-2">
+            <button class="calc-btn bg-purple-600 p-3 rounded-xl text-sm" onclick="scientific('sin')">sin</button>
+            <button class="calc-btn bg-purple-600 p-3 rounded-xl text-sm" onclick="scientific('cos')">cos</button>
+            <button class="calc-btn bg-purple-600 p-3 rounded-xl text-sm" onclick="scientific('tan')">tan</button>
+            <button class="calc-btn bg-purple-600 p-3 rounded-xl text-sm" onclick="scientific('log')">log</button>
+            
+            <button class="calc-btn bg-purple-600 p-3 rounded-xl text-sm" onclick="scientific('ln')">ln</button>
+            <button class="calc-btn bg-purple-600 p-3 rounded-xl text-sm" onclick="scientific('sqrt')">√</button>
+            <button class="calc-btn bg-purple-600 p-3 rounded-xl text-sm" onclick="scientific('pow')">x²</button>
+            <button class="calc-btn bg-purple-600 p-3 rounded-xl text-sm" onclick="appendNumber('3.14159265359')">π</button>
+        </div>
+        
+        <p class="text-center text-gray-500 text-sm mt-4">支持键盘输入</p>
+    </div>
+
+    <script>
+        let currentValue = '0';
+        let previousValue = '';
+        let operator = null;
+        let shouldReset = false;
+        
+        function updateDisplay() {
+            document.getElementById('display').textContent = currentValue;
+        }
+        
+        function appendNumber(num) {
+            if (shouldReset) {
+                currentValue = '0';
+                shouldReset = false;
+            }
+            
+            if (num === '.' && currentValue.includes('.')) return;
+            if (currentValue === '0' && num !== '.') {
+                currentValue = num;
+            } else {
+                currentValue += num;
+            }
+            updateDisplay();
+        }
+        
+        function setOperator(op) {
+            if (operator !== null) calculate();
+            previousValue = currentValue;
+            operator = op;
+            shouldReset = true;
+            
+            const opSymbol = op === '*' ? '×' : op === '/' ? '÷' : op === '-' ? '−' : op;
+            document.getElementById('history').textContent = previousValue + ' ' + opSymbol;
+        }
+        
+        function calculate() {
+            if (operator === null || shouldReset) return;
+            
+            const prev = parseFloat(previousValue);
+            const current = parseFloat(currentValue);
+            let result;
+            
+            switch (operator) {
+                case '+': result = prev + current; break;
+                case '-': result = prev - current; break;
+                case '*': result = prev * current; break;
+                case '/': result = current !== 0 ? prev / current : 'Error'; break;
+            }
+            
+            document.getElementById('history').textContent = 
+                previousValue + ' ' + 
+                (operator === '*' ? '×' : operator === '/' ? '÷' : operator) + 
+                ' ' + currentValue + ' =';
+            
+            currentValue = result.toString();
+            operator = null;
+            shouldReset = true;
+            updateDisplay();
+        }
+        
+        function clearAll() {
+            currentValue = '0';
+            previousValue = '';
+            operator = null;
+            shouldReset = false;
+            document.getElementById('history').textContent = '';
+            updateDisplay();
+        }
+        
+        function toggleSign() {
+            currentValue = (parseFloat(currentValue) * -1).toString();
+            updateDisplay();
+        }
+        
+        function percent() {
+            currentValue = (parseFloat(currentValue) / 100).toString();
+            updateDisplay();
+        }
+        
+        function scientific(func) {
+            const value = parseFloat(currentValue);
+            let result;
+            
+            switch (func) {
+                case 'sin': result = Math.sin(value * Math.PI / 180); break;
+                case 'cos': result = Math.cos(value * Math.PI / 180); break;
+                case 'tan': result = Math.tan(value * Math.PI / 180); break;
+                case 'log': result = Math.log10(value); break;
+                case 'ln': result = Math.log(value); break;
+                case 'sqrt': result = Math.sqrt(value); break;
+                case 'pow': result = Math.pow(value, 2); break;
+            }
+            
+            currentValue = result.toString();
+            shouldReset = true;
+            updateDisplay();
+        }
+        
+        // 键盘支持
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= '0' && e.key <= '9') appendNumber(e.key);
+            else if (e.key === '.') appendNumber('.');
+            else if (e.key === '+') setOperator('+');
+            else if (e.key === '-') setOperator('-');
+            else if (e.key === '*') setOperator('*');
+            else if (e.key === '/') setOperator('/');
+            else if (e.key === 'Enter' || e.key === '=') calculate();
+            else if (e.key === 'Escape' || e.key === 'c') clearAll();
+            else if (e.key === 'Backspace') {
+                currentValue = currentValue.slice(0, -1) || '0';
+                updateDisplay();
+            }
+        });
+    </script>
+</body>
+</html>

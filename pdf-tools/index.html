@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF工具箱 - 免费在线PDF处理</title>
+    <meta name="description" content="免费在线PDF合并、压缩、拆分工具，无需注册，即开即用">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-6">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold">PDF工具箱</h1>
+            <p class="text-purple-100 mt-2">免费在线PDF处理，无需注册</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- 合并PDF -->
+            <div class="bg-white rounded-2xl p-8 card-shadow">
+                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 mb-3">合并PDF</h2>
+                <p class="text-gray-600 mb-6">将多个PDF文件合并为一个文件</p>
+                <div id="merge-zone" class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-purple-400 transition">
+                    <input type="file" id="merge-input" multiple accept=".pdf" class="hidden">
+                    <p class="text-gray-500">点击或拖拽上传PDF文件</p>
+                </div>
+                <div id="merge-files" class="mt-4 space-y-2"></div>
+                <button id="merge-btn" class="w-full mt-4 bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-700 transition disabled:opacity-50" disabled>
+                    合并PDF
+                </button>
+            </div>
+
+            <!-- 压缩PDF -->
+            <div class="bg-white rounded-2xl p-8 card-shadow">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 mb-3">压缩PDF</h2>
+                <p class="text-gray-600 mb-6">减小PDF文件大小，方便分享</p>
+                <div id="compress-zone" class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400 transition">
+                    <input type="file" id="compress-input" accept=".pdf" class="hidden">
+                    <p class="text-gray-500">点击或拖拽上传PDF文件</p>
+                </div>
+                <div id="compress-info" class="mt-4 text-sm text-gray-500"></div>
+                <button id="compress-btn" class="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition disabled:opacity-50" disabled>
+                    压缩PDF
+                </button>
+            </div>
+
+            <!-- 拆分PDF -->
+            <div class="bg-white rounded-2xl p-8 card-shadow">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 mb-3">拆分PDF</h2>
+                <p class="text-gray-600 mb-6">将PDF按页面拆分为多个文件</p>
+                <div id="split-zone" class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-green-400 transition">
+                    <input type="file" id="split-input" accept=".pdf" class="hidden">
+                    <p class="text-gray-500">点击或拖拽上传PDF文件</p>
+                </div>
+                <div id="split-pages" class="mt-4 text-sm text-gray-500"></div>
+                <button id="split-btn" class="w-full mt-4 bg-green-600 text-white py-3 rounded-xl font-medium hover:bg-green-700 transition disabled:opacity-50" disabled>
+                    拆分PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="mt-16 text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-8">为什么选择我们？</h2>
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="p-6">
+                    <div class="text-3xl mb-3">🔒</div>
+                    <h3 class="font-medium text-gray-800">安全可靠</h3>
+                    <p class="text-sm text-gray-500 mt-2">所有处理在浏览器本地完成</p>
+                </div>
+                <div class="p-6">
+                    <div class="text-3xl mb-3">⚡</div>
+                    <h3 class="font-medium text-gray-800">快速处理</h3>
+                    <p class="text-sm text-gray-500 mt-2">无需上传到服务器</p>
+                </div>
+                <div class="p-6">
+                    <div class="text-3xl mb-3">💰</div>
+                    <h3 class="font-medium text-gray-800">完全免费</h3>
+                    <p class="text-sm text-gray-500 mt-2">无隐藏费用，无需注册</p>
+                </div>
+                <div class="p-6">
+                    <div class="text-3xl mb-3">📱</div>
+                    <h3 class="font-medium text-gray-800">跨平台</h3>
+                    <p class="text-sm text-gray-500 mt-2">支持手机、平板、电脑</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-400 py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p>© 2026 PDF工具箱. All rights reserved.</p>
+            <p class="text-sm mt-2">本网站所有文件处理均在本地完成，不会上传到任何服务器</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

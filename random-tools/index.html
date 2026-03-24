@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机工具箱 - 免费在线随机生成器</title>
+    <meta name="description" content="免费在线随机数生成、随机密码、随机名字、随机选择器等工具">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        .result-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-6">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold">🎲 随机工具箱</h1>
+            <p class="text-pink-100 mt-2">免费在线随机生成器，即开即用</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+        <!-- Tab Navigation -->
+        <div class="flex flex-wrap gap-2 mb-8 justify-center">
+            <button onclick="showTab('number')" class="tab-btn px-6 py-2 rounded-full bg-purple-600 text-white" data-tab="number">随机数</button>
+            <button onclick="showTab('password')" class="tab-btn px-6 py-2 rounded-full bg-gray-200 text-gray-700" data-tab="password">随机密码</button>
+            <button onclick="showTab('name')" class="tab-btn px-6 py-2 rounded-full bg-gray-200 text-gray-700" data-tab="name">随机名字</button>
+            <button onclick="showTab('picker')" class="tab-btn px-6 py-2 rounded-full bg-gray-200 text-gray-700" data-tab="picker">随机选择</button>
+            <button onclick="showTab('coin')" class="tab-btn px-6 py-2 rounded-full bg-gray-200 text-gray-700" data-tab="coin">抛硬币</button>
+            <button onclick="showTab('dice')" class="tab-btn px-6 py-2 rounded-full bg-gray-200 text-gray-700" data-tab="dice">掷骰子</button>
+        </div>
+
+        <!-- Tab Contents -->
+        <div class="max-w-2xl mx-auto">
+            <!-- 随机数 -->
+            <div id="tab-number" class="tab-content bg-white rounded-2xl p-8 card-shadow">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">随机数生成器</h2>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-2">最小值</label>
+                        <input type="number" id="min-num" value="1" class="w-full border rounded-lg px-4 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-2">最大值</label>
+                        <input type="number" id="max-num" value="100" class="w-full border rounded-lg px-4 py-2">
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm text-gray-600 mb-2">生成数量</label>
+                    <input type="number" id="count-num" value="1" min="1" max="100" class="w-full border rounded-lg px-4 py-2">
+                </div>
+                <div class="mb-4">
+                    <label class="flex items-center gap-2 text-sm text-gray-600">
+                        <input type="checkbox" id="unique-num" class="rounded">
+                        不重复
+                    </label>
+                </div>
+                <button onclick="generateNumber()" class="w-full bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-700 transition">
+                    生成随机数
+                </button>
+                <div id="result-number" class="result-box text-white text-center py-6 rounded-xl mt-6 text-2xl font-bold hidden"></div>
+            </div>
+
+            <!-- 随机密码 -->
+            <div id="tab-password" class="tab-content bg-white rounded-2xl p-8 card-shadow hidden">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">随机密码生成器</h2>
+                <div class="mb-6">
+                    <label class="block text-sm text-gray-600 mb-2">密码长度: <span id="length-val">16</span></label>
+                    <input type="range" id="pwd-length" min="8" max="64" value="16" class="w-full" oninput="document.getElementById('length-val').textContent=this.value">
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <label class="flex items-center gap-2 text-sm text-gray-600">
+                        <input type="checkbox" id="pwd-upper" checked class="rounded"> 大写字母 (A-Z)
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-gray-600">
+                        <input type="checkbox" id="pwd-lower" checked class="rounded"> 小写字母 (a-z)
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-gray-600">
+                        <input type="checkbox" id="pwd-num" checked class="rounded"> 数字 (0-9)
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-gray-600">
+                        <input type="checkbox" id="pwd-symbol" checked class="rounded"> 特殊符号 (!@#$)
+                    </label>
+                </div>
+                <button onclick="generatePassword()" class="w-full bg-pink-600 text-white py-3 rounded-xl font-medium hover:bg-pink-700 transition">
+                    生成密码
+                </button>
+                <div id="result-password" class="result-box text-white text-center py-6 rounded-xl mt-6 text-xl font-mono break-all hidden"></div>
+                <button onclick="copyPassword()" id="copy-btn" class="w-full mt-3 bg-gray-200 text-gray-700 py-2 rounded-xl hover:bg-gray-300 transition hidden">
+                    📋 复制密码
+                </button>
+            </div>
+
+            <!-- 随机名字 -->
+            <div id="tab-name" class="tab-content bg-white rounded-2xl p-8 card-shadow hidden">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">随机名字生成器</h2>
+                <div class="mb-6">
+                    <label class="block text-sm text-gray-600 mb-2">名字类型</label>
+                    <select id="name-type" class="w-full border rounded-lg px-4 py-2">
+                        <option value="chinese-male">中文男名</option>
+                        <option value="chinese-female">中文女名</option>
+                        <option value="english-male">英文男名</option>
+                        <option value="english-female">英文女名</option>
+                        <option value="nickname">网名/昵称</option>
+                    </select>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm text-gray-600 mb-2">生成数量</label>
+                    <input type="number" id="name-count" value="5" min="1" max="50" class="w-full border rounded-lg px-4 py-2">
+                </div>
+                <button onclick="generateName()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-medium hover:bg-indigo-700 transition">
+                    生成名字
+                </button>
+                <div id="result-name" class="result-box text-white text-center py-6 rounded-xl mt-6 text-lg hidden"></div>
+            </div>
+
+            <!-- 随机选择 -->
+            <div id="tab-picker" class="tab-content bg-white rounded-2xl p-8 card-shadow hidden">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">随机选择器</h2>
+                <div class="mb-6">
+                    <label class="block text-sm text-gray-600 mb-2">输入选项（每行一个）</label>
+                    <textarea id="picker-options" rows="6" placeholder="选项1&#10;选项2&#10;选项3" class="w-full border rounded-lg px-4 py-2"></textarea>
+                </div>
+                <button onclick="pickRandom()" class="w-full bg-green-600 text-white py-3 rounded-xl font-medium hover:bg-green-700 transition">
+                    随机选择
+                </button>
+                <div id="result-picker" class="result-box text-white text-center py-6 rounded-xl mt-6 text-2xl font-bold hidden"></div>
+            </div>
+
+            <!-- 抛硬币 -->
+            <div id="tab-coin" class="tab-content bg-white rounded-2xl p-8 card-shadow hidden">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">抛硬币</h2>
+                <div id="coin-display" class="text-center py-12">
+                    <span class="text-8xl">🪙</span>
+                </div>
+                <button onclick="flipCoin()" class="w-full bg-yellow-500 text-white py-3 rounded-xl font-medium hover:bg-yellow-600 transition">
+                    抛硬币
+                </button>
+                <div id="result-coin" class="result-box text-white text-center py-6 rounded-xl mt-6 text-2xl font-bold hidden"></div>
+                <div id="coin-stats" class="mt-4 text-center text-gray-500"></div>
+            </div>
+
+            <!-- 掷骰子 -->
+            <div id="tab-dice" class="tab-content bg-white rounded-2xl p-8 card-shadow hidden">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">掷骰子</h2>
+                <div class="mb-6">
+                    <label class="block text-sm text-gray-600 mb-2">骰子数量</label>
+                    <input type="number" id="dice-count" value="2" min="1" max="10" class="w-full border rounded-lg px-4 py-2">
+                </div>
+                <div id="dice-display" class="flex justify-center gap-4 py-8 flex-wrap">
+                    <span class="text-6xl">🎲</span>
+                </div>
+                <button onclick="rollDice()" class="w-full bg-red-600 text-white py-3 rounded-xl font-medium hover:bg-red-700 transition">
+                    掷骰子
+                </button>
+                <div id="result-dice" class="result-box text-white text-center py-6 rounded-xl mt-6 text-2xl font-bold hidden"></div>
+            </div>
+        </div>
+
+        <!-- Ads/Info Section -->
+        <div class="mt-16 text-center text-gray-500 text-sm">
+            <p>所有随机算法均在浏览器本地运行，保证公平公正</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-400 py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p>© 2026 随机工具箱. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

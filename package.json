@@ -1,0 +1,9 @@
+{
+  "name": "web-tools",
+  "version": "1.0.0",
+  "description": "免费在线工具集合",
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'Static site, no build needed'"
+  }
+}

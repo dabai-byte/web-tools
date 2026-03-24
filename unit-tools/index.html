@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单位换算工具 - 长度重量温度时间货币换算</title>
+    <meta name="description" content="免费在线单位换算工具，支持长度、重量、温度、时间、面积、体积等多种单位换算。无需注册，即开即用。">
+    <meta name="keywords" content="单位换算,长度换算,重量换算,温度换算,汇率换算">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-gray-100">
+    <header class="gradient-bg py-6">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold">📐 单位换算工具</h1>
+            <p class="text-gray-100 mt-2">长度 · 重量 · 温度 · 时间 · 面积</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- Tab Navigation -->
+        <div class="flex flex-wrap gap-2 mb-6 justify-center">
+            <button onclick="showTab('length')" class="tab-btn px-4 py-2 rounded-full bg-purple-600 text-white" data-tab="length">长度</button>
+            <button onclick="showTab('weight')" class="tab-btn px-4 py-2 rounded-full bg-gray-700 text-gray-300" data-tab="weight">重量</button>
+            <button onclick="showTab('temperature')" class="tab-btn px-4 py-2 rounded-full bg-gray-700 text-gray-300" data-tab="temperature">温度</button>
+            <button onclick="showTab('time')" class="tab-btn px-4 py-2 rounded-full bg-gray-700 text-gray-300" data-tab="time">时间</button>
+            <button onclick="showTab('area')" class="tab-btn px-4 py-2 rounded-full bg-gray-700 text-gray-300" data-tab="area">面积</button>
+            <button onclick="showTab('volume')" class="tab-btn px-4 py-2 rounded-full bg-gray-700 text-gray-300" data-tab="volume">体积</button>
+        </div>
+
+        <!-- 转换器 -->
+        <div class="max-w-2xl mx-auto bg-gray-800 rounded-2xl p-8">
+            <div class="grid grid-cols-2 gap-8">
+                <!-- 输入 -->
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">输入值</label>
+                    <input type="number" id="input-value" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-xl" value="1" oninput="convert()">
+                    
+                    <label class="block text-sm text-gray-400 mb-2 mt-4">从</label>
+                    <select id="from-unit" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3" onchange="convert()">
+                    </select>
+                </div>
+                
+                <!-- 输出 -->
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">结果</label>
+                    <input type="text" id="output-value" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-3 text-xl" readonly>
+                    
+                    <label class="block text-sm text-gray-400 mb-2 mt-4">到</label>
+                    <select id="to-unit" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3" onchange="convert()">
+                    </select>
+                </div>
+            </div>
+            
+            <!-- 交换按钮 -->
+            <button onclick="swapUnits()" class="w-full mt-6 bg-gray-700 py-3 rounded-xl hover:bg-gray-600 transition">
+                ⇄ 交换单位
+            </button>
+            
+            <!-- 公式说明 -->
+            <div id="formula" class="mt-6 text-center text-gray-400 text-sm"></div>
+        </div>
+
+        <!-- 常用换算 -->
+        <div class="mt-12 max-w-4xl mx-auto">
+            <h2 class="text-xl font-bold mb-4">常用换算</h2>
+            <div id="quick-ref" class="grid md:grid-cols-3 gap-4"></div>
+        </div>
+    </main>
+
+    <footer class="text-center py-6 text-gray-500 text-sm border-t border-gray-800">
+        <p>© 2026 单位换算工具</p>
+    </footer>
+
+    <script>
+        // 单位数据
+        const units = {
+            length: {
+                name: '长度',
+                units: {
+                    'km': { name: '千米', factor: 1000 },
+                    'm': { name: '米', factor: 1 },
+                    'cm': { name: '厘米', factor: 0.01 },
+                    'mm': { name: '毫米', factor: 0.001 },
+                    'mi': { name: '英里', factor: 1609.344 },
+                    'yd': { name: '码', factor: 0.9144 },
+                    'ft': { name: '英尺', factor: 0.3048 },
+                    'in': { name: '英寸', factor: 0.0254 }
+                },
+                base: 'm'
+            },
+            weight: {
+                name: '重量',
+                units: {
+                    't': { name: '吨', factor: 1000 },
+                    'kg': { name: '千克', factor: 1 },
+                    'g': { name: '克', factor: 0.001 },
+                    'mg': { name: '毫克', factor: 0.000001 },
+                    'lb': { name: '磅', factor: 0.453592 },
+                    'oz': { name: '盎司', factor: 0.0283495 },
+                    'jin': { name: '斤', factor: 0.5 }
+                },
+                base: 'kg'
+            },
+            temperature: {
+                name: '温度',
+                units: {
+                    'c': { name: '摄氏度', factor: 1 },
+                    'f': { name: '华氏度', factor: 1 },
+                    'k': { name: '开尔文', factor: 1 }
+                },
+                base: 'c',
+                special: true
+            },
+            time: {
+                name: '时间',
+                units: {
+                    'y': { name: '年', factor: 31536000 },
+                    'mo': { name: '月', factor: 2592000 },
+                    'w': { name: '周', factor: 604800 },
+                    'd': { name: '天', factor: 86400 },
+                    'h': { name: '小时', factor: 3600 },
+                    'min': { name: '分钟', factor: 60 },
+                    's': { name: '秒', factor: 1 },
+                    'ms': { name: '毫秒', factor: 0.001 }
+                },
+                base: 's'
+            },
+            area: {
+                name: '面积',
+                units: {
+                    'km2': { name: '平方千米', factor: 1000000 },
+                    'ha': { name: '公顷', factor: 10000 },
+                    'm2': { name: '平方米', factor: 1 },
+                    'dm2': { name: '平方分米', factor: 0.01 },
+                    'cm2': { name: '平方厘米', factor: 0.0001 },
+                    'acre': { name: '英亩', factor: 4046.86 },
+                    'ft2': { name: '平方英尺', factor: 0.092903 }
+                },
+                base: 'm2'
+            },
+            volume: {
+                name: '体积',
+                units: {
+                    'm3': { name: '立方米', factor: 1 },
+                    'dm3': { name: '立方分米', factor: 0.001 },
+                    'cm3': { name: '立方厘米', factor: 0.000001 },
+                    'l': { name: '升', factor: 0.001 },
+                    'ml': { name: '毫升', factor: 0.000001 },
+                    'gal': { name: '加仑', factor: 0.00378541 },
+                    'pt': { name: '品脱', factor: 0.000473176 }
+                },
+                base: 'm3'
+            }
+        };
+
+        let currentTab = 'length';
+
+        function showTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-purple-600', 'text-white');
+                btn.classList.add('bg-gray-700', 'text-gray-300');
+            });
+            document.querySelector(`[data-tab="${tab}"]`).classList.remove('bg-gray-700', 'text-gray-300');
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('bg-purple-600', 'text-white');
+            
+            loadUnits();
+            convert();
+        }
+
+        function loadUnits() {
+            const fromSelect = document.getElementById('from-unit');
+            const toSelect = document.getElementById('to-unit');
+            const data = units[currentTab];
+            
+            const options = Object.entries(data.units).map(([key, val]) => 
+                `<option value="${key}">${val.name}</option>`
+            ).join('');
+            
+            fromSelect.innerHTML = options;
+            toSelect.innerHTML = options;
+            
+            // 默认选中第二个单位
+            toSelect.selectedIndex = 1;
+        }
+
+        function convert() {
+            const inputValue = parseFloat(document.getElementById('input-value').value) || 0;
+            const fromUnit = document.getElementById('from-unit').value;
+            const toUnit = document.getElementById('to-unit').value;
+            const data = units[currentTab];
+            
+            let result;
+            
+            if (data.special && currentTab === 'temperature') {
+                // 温度特殊处理
+                result = convertTemperature(inputValue, fromUnit, toUnit);
+            } else {
+                // 标准转换
+                const baseValue = inputValue * data.units[fromUnit].factor;
+                result = baseValue / data.units[toUnit].factor;
+            }
+            
+            // 格式化结果
+            const formatted = result < 0.01 || result > 100000 
+                ? result.toExponential(4) 
+                : result.toFixed(6).replace(/\.?0+$/, '');
+            
+            document.getElementById('output-value').value = formatted;
+            
+            // 更新公式
+            document.getElementById('formula').textContent = 
+                `${inputValue} ${data.units[fromUnit].name} = ${formatted} ${data.units[toUnit].name}`;
+            
+            // 更新快速参考
+            updateQuickRef();
+        }
+
+        function convertTemperature(value, from, to) {
+            // 先转成摄氏度
+            let celsius;
+            if (from === 'c') celsius = value;
+            else if (from === 'f') celsius = (value - 32) * 5/9;
+            else celsius = value - 273.15;
+            
+            // 再转成目标单位
+            if (to === 'c') return celsius;
+            else if (to === 'f') return celsius * 9/5 + 32;
+            else return celsius + 273.15;
+        }
+
+        function swapUnits() {
+            const fromSelect = document.getElementById('from-unit');
+            const toSelect = document.getElementById('to-unit');
+            const tempIndex = fromSelect.selectedIndex;
+            fromSelect.selectedIndex = toSelect.selectedIndex;
+            toSelect.selectedIndex = tempIndex;
+            convert();
+        }
+
+        function updateQuickRef() {
+            const data = units[currentTab];
+            const refs = [];
+            
+            // 生成常用换算参考
+            const commonConversions = {
+                length: ['1 km = 1000 m', '1 mi ≈ 1.609 km', '1 ft = 30.48 cm', '1 in = 2.54 cm'],
+                weight: ['1 kg = 1000 g', '1 lb ≈ 0.454 kg', '1 斤 = 500 g', '1 oz ≈ 28.35 g'],
+                temperature: ['0°C = 32°F', '100°C = 212°F', '-40°C = -40°F', '0K = -273.15°C'],
+                time: ['1 年 = 365 天', '1 天 = 24 小时', '1 小时 = 60 分', '1 分 = 60 秒'],
+                area: ['1 km² = 100 公顷', '1 公顷 = 10000 m²', '1 亩 ≈ 666.7 m²', '1 acre ≈ 4047 m²'],
+                volume: ['1 L = 1000 mL', '1 m³ = 1000 L', '1 gal ≈ 3.785 L', '1 L = 1 dm³']
+            };
+            
+            const items = commonConversions[currentTab] || [];
+            document.getElementById('quick-ref').innerHTML = items.map(item => 
+                `<div class="bg-gray-800 p-4 rounded-lg text-sm">${item}</div>`
+            ).join('');
+        }
+
+        // 初始化
+        loadUnits();
+        convert();
+    </script>
+</body>
+</html>

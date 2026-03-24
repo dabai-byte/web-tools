@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文本工具箱 - 字数统计/文本对比/大小写转换</title>
+    <meta name="description" content="免费在线文本处理工具：字数统计、文本对比、大小写转换、去除空行。无需注册，本地处理。">
+    <meta name="keywords" content="字数统计,文本对比,大小写转换,在线文本工具">
+    <link rel="canonical" href="https://dabai-byte.github.io/web-tools/text-tools/">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #2c3e50 0%, #4ca1af 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-gray-100">
+    <header class="gradient-bg py-6">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold">📝 文本工具箱</h1>
+            <p class="text-gray-200 mt-2">字数统计 · 文本对比 · 大小写转换</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- Tab Navigation -->
+        <div class="flex flex-wrap gap-2 mb-6">
+            <button onclick="showTab('count')" class="tab-btn px-4 py-2 rounded-lg bg-teal-600 text-white" data-tab="count">字数统计</button>
+            <button onclick="showTab('case')" class="tab-btn px-4 py-2 rounded-lg bg-gray-700 text-gray-300" data-tab="case">大小写转换</button>
+            <button onclick="showTab('clean')" class="tab-btn px-4 py-2 rounded-lg bg-gray-700 text-gray-300" data-tab="clean">文本清理</button>
+            <button onclick="showTab('diff')" class="tab-btn px-4 py-2 rounded-lg bg-gray-700 text-gray-300" data-tab="diff">文本对比</button>
+        </div>
+
+        <!-- 字数统计 -->
+        <div id="tab-count" class="tab-content">
+            <div class="mb-4">
+                <textarea id="count-input" rows="12" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-4" placeholder="在此输入或粘贴文本..."></textarea>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-gray-800 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-teal-400" id="char-count">0</div>
+                    <div class="text-gray-400 text-sm">字符数</div>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-blue-400" id="char-no-space">0</div>
+                    <div class="text-gray-400 text-sm">字符(不含空格)</div>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-purple-400" id="word-count">0</div>
+                    <div class="text-gray-400 text-sm">词数</div>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-green-400" id="line-count">0</div>
+                    <div class="text-gray-400 text-sm">行数</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 大小写转换 -->
+        <div id="tab-case" class="tab-content hidden">
+            <div class="mb-4">
+                <textarea id="case-input" rows="8" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-4" placeholder="输入要转换的文本..."></textarea>
+            </div>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button onclick="toUpperCase()" class="px-4 py-2 bg-teal-600 rounded-lg hover:bg-teal-700">全大写</button>
+                <button onclick="toLowerCase()" class="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700">全小写</button>
+                <button onclick="toTitleCase()" class="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700">首字母大写</button>
+                <button onclick="toSentenceCase()" class="px-4 py-2 bg-green-600 rounded-lg hover:bg-green-700">句首大写</button>
+                <button onclick="toggleCase()" class="px-4 py-2 bg-orange-600 rounded-lg hover:bg-orange-700">大小写互换</button>
+            </div>
+            <div>
+                <textarea id="case-output" rows="8" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-4" readonly></textarea>
+            </div>
+        </div>
+
+        <!-- 文本清理 -->
+        <div id="tab-clean" class="tab-content hidden">
+            <div class="mb-4">
+                <textarea id="clean-input" rows="8" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-4" placeholder="输入要清理的文本..."></textarea>
+            </div>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button onclick="removeEmptyLines()" class="px-4 py-2 bg-teal-600 rounded-lg hover:bg-teal-700">去除空行</button>
+                <button onclick="removeExtraSpaces()" class="px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700">合并空格</button>
+                <button onclick="trimLines()" class="px-4 py-2 bg-purple-600 rounded-lg hover:bg-purple-700">去除行首尾空格</button>
+                <button onclick="removeAllSpaces()" class="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700">去除所有空格</button>
+            </div>
+            <div>
+                <textarea id="clean-output" rows="8" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-4" readonly></textarea>
+            </div>
+        </div>
+
+        <!-- 文本对比 -->
+        <div id="tab-diff" class="tab-content hidden">
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">文本 A</label>
+                    <textarea id="diff-a" rows="10" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-4 font-mono text-sm" placeholder="原始文本"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">文本 B</label>
+                    <textarea id="diff-b" rows="10" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-4 font-mono text-sm" placeholder="修改后文本"></textarea>
+                </div>
+            </div>
+            <button onclick="compareText()" class="mt-4 px-6 py-2 bg-teal-600 rounded-lg hover:bg-teal-700">对比</button>
+            <div id="diff-result" class="mt-4 bg-gray-800 rounded-lg p-4 font-mono text-sm whitespace-pre-wrap"></div>
+        </div>
+    </main>
+
+    <footer class="text-center py-6 text-gray-500 text-sm border-t border-gray-800">
+        <p>© 2026 文本工具箱 | 所有处理均在浏览器本地完成</p>
+    </footer>
+
+    <script>
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-teal-600', 'text-white');
+                btn.classList.add('bg-gray-700', 'text-gray-300');
+            });
+            document.querySelector(`[data-tab="${tab}"]`).classList.remove('bg-gray-700', 'text-gray-300');
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('bg-teal-600', 'text-white');
+        }
+
+        // 字数统计
+        document.getElementById('count-input').addEventListener('input', function() {
+            const text = this.value;
+            document.getElementById('char-count').textContent = text.length;
+            document.getElementById('char-no-space').textContent = text.replace(/\s/g, '').length;
+            document.getElementById('word-count').textContent = text.trim() ? text.trim().split(/\s+/).length : 0;
+            document.getElementById('line-count').textContent = text ? text.split('\n').length : 0;
+        });
+
+        // 大小写转换
+        function toUpperCase() {
+            document.getElementById('case-output').value = document.getElementById('case-input').value.toUpperCase();
+        }
+        function toLowerCase() {
+            document.getElementById('case-output').value = document.getElementById('case-input').value.toLowerCase();
+        }
+        function toTitleCase() {
+            document.getElementById('case-output').value = document.getElementById('case-input').value.replace(/\b\w/g, c => c.toUpperCase());
+        }
+        function toSentenceCase() {
+            const text = document.getElementById('case-input').value.toLowerCase();
+            document.getElementById('case-output').value = text.replace(/(^\s*\w|[.!?]\s*\w)/g, c => c.toUpperCase());
+        }
+        function toggleCase() {
+            const text = document.getElementById('case-input').value;
+            document.getElementById('case-output').value = text.split('').map(c => c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase()).join('');
+        }
+
+        // 文本清理
+        function removeEmptyLines() {
+            const text = document.getElementById('clean-input').value;
+            document.getElementById('clean-output').value = text.split('\n').filter(line => line.trim()).join('\n');
+        }
+        function removeExtraSpaces() {
+            document.getElementById('clean-output').value = document.getElementById('clean-input').value.replace(/[ \t]+/g, ' ');
+        }
+        function trimLines() {
+            const text = document.getElementById('clean-input').value;
+            document.getElementById('clean-output').value = text.split('\n').map(line => line.trim()).join('\n');
+        }
+        function removeAllSpaces() {
+            document.getElementById('clean-output').value = document.getElementById('clean-input').value.replace(/\s/g, '');
+        }
+
+        // 文本对比
+        function compareText() {
+            const a = document.getElementById('diff-a').value.split('\n');
+            const b = document.getElementById('diff-b').value.split('\n');
+            let result = [];
+            const maxLen = Math.max(a.length, b.length);
+            
+            for (let i = 0; i < maxLen; i++) {
+                const lineA = a[i] || '';
+                const lineB = b[i] || '';
+                if (lineA === lineB) {
+                    result.push(`  ${i + 1}: ${lineA}`);
+                } else {
+                    if (lineA) result.push(`- ${i + 1}: ${lineA}`);
+                    if (lineB) result.push(`+ ${i + 1}: ${lineB}`);
+                }
+            }
+            
+            document.getElementById('diff-result').innerHTML = result.map(line => {
+                if (line.startsWith('-')) return `<span class="text-red-400">${line}</span>`;
+                if (line.startsWith('+')) return `<span class="text-green-400">${line}</span>`;
+                return line;
+            }).join('\n');
+        }
+    </script>
+</body>
+</html>

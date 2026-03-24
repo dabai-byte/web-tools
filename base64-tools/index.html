@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base64工具 - 图片与文本Base64编码转换</title>
+    <meta name="description" content="免费在线Base64编码转换工具，支持图片转Base64、Base64转图片、文本Base64编解码。">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-gray-100">
+    <header class="gradient-bg py-6">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold">🔤 Base64工具</h1>
+            <p class="text-gray-300 mt-2">图片转Base64 · Base64转图片 · 文本编解码</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- Tab Navigation -->
+        <div class="flex flex-wrap gap-2 mb-6 justify-center">
+            <button onclick="showTab('image')" class="tab-btn px-4 py-2 rounded-full bg-purple-600 text-white" data-tab="image">图片转Base64</button>
+            <button onclick="showTab('decode')" class="tab-btn px-4 py-2 rounded-full bg-gray-700 text-gray-300" data-tab="decode">Base64转图片</button>
+            <button onclick="showTab('text')" class="tab-btn px-4 py-2 rounded-full bg-gray-700 text-gray-300" data-tab="text">文本编解码</button>
+        </div>
+
+        <!-- 图片转Base64 -->
+        <div id="tab-image" class="tab-content max-w-3xl mx-auto">
+            <div class="bg-gray-800 rounded-2xl p-8">
+                <h2 class="text-xl font-bold mb-4">图片转Base64</h2>
+                
+                <div class="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center cursor-pointer hover:border-purple-400 transition" id="drop-zone">
+                    <input type="file" id="file-input" accept="image/*" class="hidden">
+                    <p class="text-gray-400">点击或拖拽上传图片</p>
+                    <p class="text-xs text-gray-500 mt-2">支持 JPG, PNG, GIF, WebP</p>
+                </div>
+                
+                <div id="preview" class="mt-4 hidden">
+                    <img id="preview-img" class="max-w-xs mx-auto rounded-lg">
+                    <p id="file-info" class="text-sm text-gray-400 text-center mt-2"></p>
+                </div>
+                
+                <div class="mt-4">
+                    <label class="block text-sm text-gray-400 mb-2">Base64编码</label>
+                    <textarea id="base64-output" rows="6" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 font-mono text-sm" readonly></textarea>
+                </div>
+                
+                <div class="flex gap-2 mt-4">
+                    <button onclick="copyBase64()" class="flex-1 bg-purple-600 py-2 rounded-lg hover:bg-purple-700">📋 复制Base64</button>
+                    <button onclick="copyDataUrl()" class="flex-1 bg-gray-700 py-2 rounded-lg hover:bg-gray-600">📋 复制Data URL</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Base64转图片 -->
+        <div id="tab-decode" class="tab-content hidden max-w-3xl mx-auto">
+            <div class="bg-gray-800 rounded-2xl p-8">
+                <h2 class="text-xl font-bold mb-4">Base64转图片</h2>
+                
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">输入Base64或Data URL</label>
+                    <textarea id="base64-input" rows="6" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 font-mono text-sm" placeholder="粘贴Base64编码或Data URL..."></textarea>
+                </div>
+                
+                <button onclick="decodeBase64()" class="w-full bg-blue-600 py-3 rounded-lg hover:bg-blue-700">转换图片</button>
+                
+                <div id="decode-result" class="mt-4 text-center hidden">
+                    <img id="decoded-img" class="max-w-full rounded-lg mx-auto">
+                    <button onclick="downloadDecoded()" class="mt-4 bg-gray-700 px-6 py-2 rounded-lg hover:bg-gray-600">📥 下载图片</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 文本编解码 -->
+        <div id="tab-text" class="tab-content hidden max-w-3xl mx-auto">
+            <div class="bg-gray-800 rounded-2xl p-8">
+                <h2 class="text-xl font-bold mb-4">文本Base64编解码</h2>
+                
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">原始文本</label>
+                    <textarea id="text-input" rows="4" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2" placeholder="输入要编码的文本..."></textarea>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <button onclick="encodeText()" class="bg-green-600 py-3 rounded-lg hover:bg-green-700">编码 →</button>
+                    <button onclick="decodeText()" class="bg-orange-600 py-3 rounded-lg hover:bg-orange-700">← 解码</button>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">Base64结果</label>
+                    <textarea id="text-output" rows="4" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 font-mono text-sm" placeholder="Base64编码结果..."></textarea>
+                </div>
+                
+                <button onclick="copyTextResult()" class="w-full bg-gray-700 py-2 rounded-lg hover:bg-gray-600">📋 复制结果</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-6 text-gray-500 text-sm border-t border-gray-800">
+        <p>© 2026 Base64工具 | 所有处理均在浏览器本地完成</p>
+    </footer>
+
+    <script>
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-purple-600', 'text-white');
+                btn.classList.add('bg-gray-700', 'text-gray-300');
+            });
+            document.querySelector(`[data-tab="${tab}"]`).classList.remove('bg-gray-700', 'text-gray-300');
+            document.querySelector(`[data-tab="${tab}"]`).classList.add('bg-purple-600', 'text-white');
+        }
+
+        // 图片转Base64
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-purple-400', 'bg-purple-900/20');
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('border-purple-400', 'bg-purple-900/20');
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-purple-400', 'bg-purple-900/20');
+            handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+        function handleFile(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const dataUrl = e.target.result;
+                const base64 = dataUrl.split(',')[1];
+                
+                document.getElementById('preview-img').src = dataUrl;
+                document.getElementById('preview').classList.remove('hidden');
+                document.getElementById('file-info').textContent = 
+                    `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                document.getElementById('base64-output').value = base64;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function copyBase64() {
+            navigator.clipboard.writeText(document.getElementById('base64-output').value);
+            alert('已复制Base64');
+        }
+
+        function copyDataUrl() {
+            const base64 = document.getElementById('base64-output').value;
+            const dataUrl = 'data:image/png;base64,' + base64;
+            navigator.clipboard.writeText(dataUrl);
+            alert('已复制Data URL');
+        }
+
+        // Base64转图片
+        function decodeBase64() {
+            let input = document.getElementById('base64-input').value.trim();
+            if (!input) return alert('请输入Base64编码');
+            
+            // 如果不是Data URL，添加前缀
+            if (!input.startsWith('data:')) {
+                input = 'data:image/png;base64,' + input;
+            }
+            
+            const img = document.getElementById('decoded-img');
+            img.onerror = () => alert('无效的Base64编码');
+            img.onload = () => {
+                document.getElementById('decode-result').classList.remove('hidden');
+            };
+            img.src = input;
+        }
+
+        function downloadDecoded() {
+            const img = document.getElementById('decoded-img');
+            const a = document.createElement('a');
+            a.href = img.src;
+            a.download = 'decoded_image.png';
+            a.click();
+        }
+
+        // 文本编解码
+        function encodeText() {
+            const text = document.getElementById('text-input').value;
+            try {
+                const encoded = btoa(unescape(encodeURIComponent(text)));
+                document.getElementById('text-output').value = encoded;
+            } catch (e) {
+                alert('编码失败: ' + e.message);
+            }
+        }
+
+        function decodeText() {
+            const base64 = document.getElementById('text-output').value.trim();
+            try {
+                const decoded = decodeURIComponent(escape(atob(base64)));
+                document.getElementById('text-input').value = decoded;
+            } catch (e) {
+                alert('解码失败: 无效的Base64编码');
+            }
+        }
+
+        function copyTextResult() {
+            navigator.clipboard.writeText(document.getElementById('text-output').value);
+            alert('已复制');
+        }
+    </script>
+</body>
+</html>
